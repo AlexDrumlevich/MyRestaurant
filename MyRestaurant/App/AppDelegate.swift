@@ -14,10 +14,56 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
 
+    var orderTabBarItem: UITabBarItem!
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        
+        let temporaryDirectory = NSTemporaryDirectory()
+        let urlCache = URLCache(
+            memoryCapacity: 25_000_000,
+            diskCapacity: 50_000_000,
+            diskPath: temporaryDirectory
+        )
+        URLCache.shared = urlCache
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(updateOrderBadge),
+            name: MenuController.orderUpdateNotification,
+            object: nil
+        )
+        
+        orderTabBarItem = (window!.rootViewController! as! UITabBarController).viewControllers![1].tabBarItem
+        
         return true
     }
+    
+    @objc func updateOrderBadge() {
+        
+
+        
+        var meals = 0
+        for value in MenuController.shared.orderedMials {
+           meals += value.qantity
+        }
+        
+        orderTabBarItem.badgeValue = meals == 0 ? nil : "\(meals)"
+        
+        if 0...7 ~= meals {
+              orderTabBarItem.image = UIImage(named: "smallCart")
+             orderTabBarItem.selectedImage = UIImage(named: "smallCart")
+        } else if 8...13 ~= meals {
+            orderTabBarItem.image = UIImage(named: "middleCart")
+            orderTabBarItem.selectedImage = UIImage(named: "middleCart")
+          
+        } else {
+           
+            orderTabBarItem.image = UIImage(named: "bigCart")
+            orderTabBarItem.selectedImage = UIImage(named: "bigCart")
+        }
+        
+    }
+
 
     func applicationWillResignActive(_ application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
